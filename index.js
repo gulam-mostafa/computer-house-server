@@ -26,6 +26,7 @@ async function run() {
         const categoryCollection = client.db('computerHouse').collection('category')
         const itemsCollection = client.db('computerHouse').collection('items')
         const ordersCollection = client.db('computerHouse').collection('orders')
+        const usersCollection = client.db('computerHouse').collection('users')
 
 
         // console.log(categoryCollection)
@@ -81,11 +82,41 @@ async function run() {
             //     const message = `You already ordered ${booking.appointmentDate}`
             //     return res.send({ acknowledged: false, message })
             // }
-
-
             const result = await ordersCollection.insertOne(order)
             res.send(result)
         });
+
+        app.get('/orders', async (req, res) => {
+            const decoded = req.decoded
+            console.log('inside order api ', decoded)
+
+            // if (decoded.email !== req.query.email) {
+            //     res.status(403).send({ message: "unauthorized Access" })
+            // }
+            let query = {};
+            if (req.query.email) {
+                query = {
+                    email: req.query.email
+                }
+            }
+            const cursor = ordersCollection.find(query);
+            const orders = await cursor.sort({ createdAt: -1 }).toArray();
+            res.send(orders)
+        })
+
+
+
+        app.post('/users', async (req, res) => {
+            const user = req.body;
+            console.log(user);
+            const result = await usersCollection.insertOne(user);
+            res.send(result);
+        });
+        app.get('/users', async (req, res) => {
+            const query = {};
+            const users = await usersCollection.find(query).toArray();
+            res.send(users)
+        })
 
 
 
