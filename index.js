@@ -141,7 +141,7 @@ async function run() {
         });
 
 
-
+            // make verified seller
         app.put('/users/sale/:id', async (req, res) => {
             const id = req.params.id;
             const filter = { _id: ObjectId(id) }
@@ -156,7 +156,38 @@ async function run() {
 
 
         })
+        /// reported users update
+        app.put('/items/report/:id', async (req, res) => {
+            const id = req.params.id;
+            const filter = { _id: ObjectId(id) }
+            const options = { upsert: true }
+            const updatedDoc = {
+                $set: {
+                    roles: 'reported'
+                }
+            }
+            const result = await itemsCollection.updateOne(filter, updatedDoc, options)
+            res.send(result)
 
+
+        })
+        // reported item get 
+        app.get('/itemsrep', async (req, res) => {
+            let query = {};
+
+            if (req.query.roles) {
+                query = {
+                    roles: req.query.roles
+                }
+            }
+            const cursor = itemsCollection.find(query)
+            const users = await cursor.sort({ createdAt: -1 }).toArray();
+            res.send(users)
+        });
+
+
+
+        // admin user 
         app.get('/users/admin/:email', async (req, res) => {
             const email = req.params.email;
             const query = { email }
