@@ -11,7 +11,7 @@ app.use(express.json())
 
 
 
-const { MongoClient, ServerApiVersion } = require('mongodb');
+const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 // const uri = "mongodb+srv://computer:tC1QvgZ4c9urFH2r@cluster0.pjwtwko.mongodb.net/?retryWrites=true&w=majority";
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.pjwtwko.mongodb.net/?retryWrites=true&w=majority`;
 
@@ -88,7 +88,7 @@ async function run() {
 
         app.get('/orders', async (req, res) => {
             const decoded = req.decoded
-            console.log('inside order api ', decoded)
+            // console.log('inside order api ', decoded)
 
             // if (decoded.email !== req.query.email) {
             //     res.status(403).send({ message: "unauthorized Access" })
@@ -108,7 +108,7 @@ async function run() {
 
         app.post('/users', async (req, res) => {
             const user = req.body;
-            console.log(user);
+            // console.log(user);
             const result = await usersCollection.insertOne(user);
             res.send(result);
         });
@@ -116,17 +116,54 @@ async function run() {
         //. all seller get 
         app.get('/users', async (req, res) => {
             let query = {};
-            
+
             if (req.query.account) {
                 query = {
                     account: req.query.account
                 }
             }
             const cursor = usersCollection.find(query)
-            const users = await cursor.sort({createdAt: -1}).toArray();
+            const users = await cursor.sort({ createdAt: -1 }).toArray();
             res.send(users)
+        });
+        // all buyer
+        app.get('/users', async (req, res) => {
+            let query = {};
+
+            if (req.query.account) {
+                query = {
+                    account: req.query.account
+                }
+            }
+            const cursor = usersCollection.find(query)
+            const users = await cursor.sort({ createdAt: -1 }).toArray();
+            res.send(users)
+        });
+
+
+
+        app.put('/users/sale/:id', async (req, res) => {
+            const id = req.params.id;
+            const filter = { _id: ObjectId(id) }
+            const options = { upsert: true }
+            const updatedDoc = {
+                $set: {
+                    role: 'sale'
+                }
+            }
+            const result = await usersCollection.updateOne(filter, updatedDoc, options)
+            res.send(result)
+
+
         })
 
+        app.get('/users/admin/:email', async (req, res) => {
+            const email = req.params.email;
+            const query = { email }
+            const user = await usersCollection.findOne(query);
+            res.send({ isAdmin: user?.role === 'admin' })
+          
+        })
 
 
 
