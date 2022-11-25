@@ -17,8 +17,8 @@ const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster
 
 const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology: true, serverApi: ServerApiVersion.v1 });
 // console.log(uri)
-console.log(process.env.DB_USER)
-console.log(process.env.DB_PASS)
+// console.log(process.env.DB_USER)
+// console.log(process.env.DB_PASS)
 
 async function run() {
     try {
@@ -112,9 +112,18 @@ async function run() {
             const result = await usersCollection.insertOne(user);
             res.send(result);
         });
+
+        //. all seller get 
         app.get('/users', async (req, res) => {
-            const query = {};
-            const users = await usersCollection.find(query).toArray();
+            let query = {};
+            
+            if (req.query.account) {
+                query = {
+                    account: req.query.account
+                }
+            }
+            const cursor = usersCollection.find(query)
+            const users = await cursor.sort({createdAt: -1}).toArray();
             res.send(users)
         })
 
