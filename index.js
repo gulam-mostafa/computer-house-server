@@ -121,7 +121,7 @@ async function run() {
 
             if (req.query.sellermail) {
                 query = {
-                   sellermail: req.query.sellermail
+                    sellermail: req.query.sellermail
                 }
             }
             const cursor = ordersCollection.find(query)
@@ -152,8 +152,7 @@ async function run() {
             res.send(users)
         });
         // all buyer
-        app.get('/users', async (req, res) => 
-        {  
+        app.get('/users', async (req, res) => {
             let query = {};
 
             if (req.query.account) {
@@ -167,7 +166,7 @@ async function run() {
         });
 
 
-            // make verified seller
+        // make verified seller
         app.put('/users/sale/:id', async (req, res) => {
             const id = req.params.id;
             const filter = { _id: ObjectId(id) }
@@ -201,12 +200,12 @@ async function run() {
 
         app.put('/wish', async (req, res) => {
             const wish = req.body
-       
+
             const result = await wishCollection.insertOne(wish)
             res.send(result)
         });
-         //wishlist get
-         app.get('/wish', async (req, res) => {
+        //wishlist get
+        app.get('/wish', async (req, res) => {
             const decoded = req.decoded
             // console.log('inside order api ', decoded)
 
@@ -223,7 +222,7 @@ async function run() {
             const orders = await cursor.sort({ createdAt: -1 }).toArray();
             res.send(orders)
         })
-    
+
 
         // reported item get 
         app.get('/itemsrep', async (req, res) => {
@@ -247,7 +246,7 @@ async function run() {
             const query = { email }
             const user = await usersCollection.findOne(query);
             res.send({ isAdmin: user?.role === 'admin' })
-          
+
         })
 
         app.delete('/users/:id', async (req, res) => {
@@ -256,7 +255,8 @@ async function run() {
             const result = await usersCollection.deleteOne(query);
             res.send(result)
         })
-       
+      
+
 
 
 
