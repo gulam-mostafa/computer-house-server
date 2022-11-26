@@ -264,8 +264,49 @@ async function run() {
         })
       
 
+        // seller all product (my al products)
+        app.get('/myallproducts', async (req, res) => {
+      
+            let query = {};
+            if (req.query.email) {
+                query = {
+                    email: req.query.email
+                }
+            }
+            const cursor = itemsCollection.find(query);
+            const orders = await cursor.sort({ createdAt: -1 }).toArray();
+            res.send(orders)
+        })
+        /// advertisment 
+
+        app.put('/items/ad/:id', async (req, res) => {
+            const id = req.params.id;
+            const filter = { _id: ObjectId(id) }
+            const options = { upsert: true }
+            const updatedDoc = {
+                $set: {
+                    ads: 'ads'
+                }
+            }
+            const result = await itemsCollection.updateOne(filter, updatedDoc, options)
+            res.send(result)
 
 
+        })
+
+        // advertisement items 
+        app.get('/itemsads', async (req, res) => {
+            let query = {};
+
+            if (req.query.ads) {
+                query = {
+                    ads: req.query.ads
+                }
+            }
+            const cursor = itemsCollection.find(query)
+            const users = await cursor.sort({ createdAt: -1 }).toArray();
+            res.send(users)
+        });
 
 
 
