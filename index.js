@@ -95,6 +95,8 @@ async function run() {
             res.send(result)
         });
 
+        // buyer order 
+
         app.get('/orders', async (req, res) => {
             const decoded = req.decoded
             // console.log('inside order api ', decoded)
@@ -112,6 +114,20 @@ async function run() {
             const orders = await cursor.sort({ createdAt: -1 }).toArray();
             res.send(orders)
         })
+
+        // my buyer 
+        app.get('/orders/mybuyer', async (req, res) => {
+            let query = {};
+
+            if (req.query.sellermail) {
+                query = {
+                   sellermail: req.query.sellermail
+                }
+            }
+            const cursor = ordersCollection.find(query)
+            const users = await cursor.sort({ createdAt: -1 }).toArray();
+            res.send(users)
+        });
 
 
 
