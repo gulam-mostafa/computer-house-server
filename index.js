@@ -249,10 +249,17 @@ async function run() {
 
         })
 
-        app.delete('/users/:id', async (req, res) => {
+        app.delete('/users/delete/:id', async (req, res) => {
             const id = req.params.id;
             const query = { _id: ObjectId(id) }
             const result = await usersCollection.deleteOne(query);
+            res.send(result)
+        })
+      
+        app.delete('/items/delete/:id', async (req, res) => {
+            const id = req.params.id;
+            const query = { _id: ObjectId(id) }
+            const result = await itemsCollection.deleteOne(query);
             res.send(result)
         })
       
