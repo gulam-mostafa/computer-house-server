@@ -27,6 +27,7 @@ async function run() {
         const itemsCollection = client.db('computerHouse').collection('items')
         const ordersCollection = client.db('computerHouse').collection('orders')
         const usersCollection = client.db('computerHouse').collection('users')
+        const wishCollection = client.db('computerHouse').collection('wish')
 
 
         // console.log(categoryCollection)
@@ -43,6 +44,14 @@ async function run() {
             const items = await cursor.toArray();
             res.send(items);
         })
+
+        // post item 
+        app.post('/items', async (req, res) => {
+            const user = req.body;
+            // console.log(user);
+            const result = await itemsCollection.insertOne(user);
+            res.send(result);
+        });
 
 
         // app.get('/category/:id', async (req, res) => {
@@ -127,7 +136,8 @@ async function run() {
             res.send(users)
         });
         // all buyer
-        app.get('/users', async (req, res) => {
+        app.get('/users', async (req, res) => 
+        {  
             let query = {};
 
             if (req.query.account) {
@@ -171,6 +181,34 @@ async function run() {
 
 
         })
+        ///wishlist update
+
+        app.put('/wish', async (req, res) => {
+            const wish = req.body
+       
+            const result = await wishCollection.insertOne(wish)
+            res.send(result)
+        });
+         //wishlist get
+         app.get('/wish', async (req, res) => {
+            const decoded = req.decoded
+            // console.log('inside order api ', decoded)
+
+            // if (decoded.email !== req.query.email) {
+            //     res.status(403).send({ message: "unauthorized Access" })
+            // }
+            let query = {};
+            if (req.query.email) {
+                query = {
+                    email: req.query.email
+                }
+            }
+            const cursor = wishCollection.find(query);
+            const orders = await cursor.sort({ createdAt: -1 }).toArray();
+            res.send(orders)
+        })
+    
+
         // reported item get 
         app.get('/itemsrep', async (req, res) => {
             let query = {};
