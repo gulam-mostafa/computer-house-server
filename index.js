@@ -151,6 +151,8 @@ async function run() {
             const users = await cursor.sort({ createdAt: -1 }).toArray();
             res.send(users)
         });
+
+
         // all buyer
         app.get('/users', async (req, res) => {
             let query = {};
@@ -158,6 +160,20 @@ async function run() {
             if (req.query.account) {
                 query = {
                     account: req.query.account
+                }
+            }
+            const cursor = usersCollection.find(query)
+            const users = await cursor.sort({ createdAt: -1 }).toArray();
+            res.send(users)
+        });
+
+        // find user email 
+        app.get('/users/email', async (req, res) => {
+            let query = {};
+
+            if (req.query.email) {
+                query = {
+                    email: req.query.email
                 }
             }
             const cursor = usersCollection.find(query)
