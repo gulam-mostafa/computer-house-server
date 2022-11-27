@@ -3,13 +3,13 @@ const app = express()
 const cors = require('cors')
 const port = process.env.PORT || 5000
 require('dotenv').config()
+const stripe=require("stripe")(process.env.STRIPE_SECRETE);
+
 
 
 // middleware
 app.use(cors())
 app.use(express.json())
-
-
 
 const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 // const uri = "mongodb+srv://computer:tC1QvgZ4c9urFH2r@cluster0.pjwtwko.mongodb.net/?retryWrites=true&w=majority";
@@ -28,6 +28,7 @@ async function run() {
         const ordersCollection = client.db('computerHouse').collection('orders')
         const usersCollection = client.db('computerHouse').collection('users')
         const wishCollection = client.db('computerHouse').collection('wish')
+        const paymentsCollection = client.db('computerHouse').collection('Payments')
 
 
         // console.log(categoryCollection)
@@ -150,7 +151,11 @@ async function run() {
             const cursor = usersCollection.find(query)
             const users = await cursor.sort({ createdAt: -1 }).toArray();
             res.send(users)
+            console.log(users.length)
         });
+
+     
+
 
 
         // all buyer
@@ -194,6 +199,7 @@ async function run() {
             }
             const result = await usersCollection.updateOne(filter, updatedDoc, options)
             res.send(result)
+           
 
 
         })
@@ -324,10 +330,48 @@ async function run() {
             res.send(users)
         });
 
+        // single order  get
+        app.get('/orders/:id', async (req, res) => {
+            const id = req.params.id;
+            const query = { _id: ObjectId(id) };
+            const order = await ordersCollection.findOne(query);
+            res.send(order);
+        })
+        //payment 
+        
+        
+        app.post('/create-payment-intent', async (req, res) => {
+            const order = req.body;
+            const price = order.price;
+            const amount = price * 100;
+            const paymentIntent =  await stripe.paymentIntents.create({
+                currency: 'usd',
+                amount: amount,
+                "payment_method_types": [
+                    "card"
+                ]
+            })
+            
+         
+            res.send({
+                clientSecret: paymentIntent.client_secret,
+            });
+        });
 
-
-
-
+        app.put('/payments', async (req, res) =>{
+            const payment = req.body;
+            const result = await paymentsCollection.insertOne(payment);
+            const id = payment.ordersId
+            const filter = {_id: ObjectId(id)}
+            const updatedDoc = {
+                $set: {
+                    paid: true,
+                    // transactionId: payment.transactionId
+                }
+            }
+            const updatedResult = await ordersCollection.updateOne(filter, updatedDoc)
+            res.send(result);
+        })
 
 
 
