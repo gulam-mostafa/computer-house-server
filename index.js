@@ -21,22 +21,22 @@ const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology:
 // console.log(process.env.DB_USER)
 // console.log(process.env.DB_PASS)
 
-function verifyJWT (req , res , next){
-    // console.log(req.headers.authorization)
+function verifyJWT(req, res, next) {
+
     const autHeader = req.headers.authorization;
-    if(!autHeader){
+    if (!autHeader) {
         return res.status(401).send('unauthorized access')
     }
-const token = autHeader.split( ' ')[1]
-jwt.verify(token, process.env.ACCESS_TOKEN, function(err , decoded){
-    if(err){
-        return res.status(403).send({message: 'forbidden Access'})
-    }
-    req.decoded = decoded;
-    next();
+    const token = autHeader.split(' ')[1]
+    jwt.verify(token, process.env.ACCESS_TOKEN, function (err, decoded) {
+        if (err) {
+            return res.status(403).send({ message: 'forbidden Access' })
+        }
+        req.decoded = decoded;
+        next();
 
 
-})
+    })
 
 }
 
@@ -119,28 +119,9 @@ async function run() {
 
 
 
-
-
-
-
-
-
-
-
-
-
         app.post('/orders', async (req, res) => {
             const order = req.body
-            // const query = {
-            //     appointmentDate: booking.appointmentDate,
-            //     email: booking.email,
-            //     treatment: booking.treatment
-            // }
-            // const alreadyOrdered = await ordersCollection.find(query).toArray();
-            // if (alreadyOrdered.length) {
-            //     const message = `You already ordered ${booking.appointmentDate}`
-            //     return res.send({ acknowledged: false, message })
-            // }
+
             const result = await ordersCollection.insertOne(order)
             res.send(result)
         });
@@ -149,14 +130,11 @@ async function run() {
 
         app.get('/orders', verifyJWT, async (req, res) => {
             const decoded = req.decoded
-            // console.log('inside order api ', decoded)
-
             const decodedEmail = req.query.email
-
-            if ( req.query.email !== decodedEmail ) {
+            if (req.query.email !== decodedEmail) {
                 res.status(403).send({ message: "Forbidden Access" })
             }
-         
+
             let query = {};
             if (req.query.email) {
                 query = {
@@ -169,7 +147,14 @@ async function run() {
         })
 
         // my buyer 
-        app.get('/orders/mybuyer', async (req, res) => {
+        app.get('/orders/mybuyer',  async (req, res) => {
+            
+            const decoded = req.decoded
+            const decodedEmail = req.query.email
+            if (req.query.email !== decodedEmail) {
+                res.status(403).send({ message: "Forbidden Access" })
+            }
+            
             let query = {};
 
             if (req.query.sellermail) {
@@ -192,7 +177,7 @@ async function run() {
         });
 
         //. all seller get 
-        app.get('/users', async (req, res) => {
+        app.get('/users',  async (req, res) => {
             let query = {};
 
             if (req.query.account) {
@@ -203,7 +188,7 @@ async function run() {
             const cursor = usersCollection.find(query)
             const users = await cursor.sort({ createdAt: -1 }).toArray();
             res.send(users)
-            console.log(users.length)
+            // console.log(users.length)
         });
 
 
@@ -211,7 +196,9 @@ async function run() {
 
 
         // all buyer
-        app.get('/users', async (req, res) => {
+        app.get('/users',  async (req, res) => {
+
+
             let query = {};
 
             if (req.query.account) {
@@ -225,7 +212,7 @@ async function run() {
         });
 
         // find user email 
-        app.get('/users/email', async (req, res) => {
+        app.get('/users/email',  async (req, res) => {
             let query = {};
 
             if (req.query.email) {
@@ -252,8 +239,6 @@ async function run() {
             const result = await usersCollection.updateOne(filter, updatedDoc, options)
             res.send(result)
 
-
-
         })
         /// reported users update
         app.put('/items/report/:id', async (req, res) => {
@@ -268,24 +253,23 @@ async function run() {
             const result = await itemsCollection.updateOne(filter, updatedDoc, options)
             res.send(result)
 
-
         })
         ///wishlist update
 
-        app.put('/wish', async (req, res) => {
+        app.put('/wish',  async (req, res) => {
             const wish = req.body
 
             const result = await wishCollection.insertOne(wish)
             res.send(result)
         });
         //wishlist get
-        app.get('/wish', async (req, res) => {
+        app.get('/wish',  async (req, res) => {
             const decoded = req.decoded
-            // console.log('inside order api ', decoded)
-
-            // if (decoded.email !== req.query.email) {
-            //     res.status(403).send({ message: "unauthorized Access" })
-            // }
+            const decodedEmail = req.query.email
+            if (req.query.email !== decodedEmail) {
+                res.status(403).send({ message: "Forbidden Access" })
+            }
+    
             let query = {};
             if (req.query.email) {
                 query = {
@@ -296,7 +280,6 @@ async function run() {
             const orders = await cursor.sort({ createdAt: -1 }).toArray();
             res.send(orders)
         })
-
 
         // reported item get 
         app.get('/itemsrep', async (req, res) => {
@@ -312,14 +295,21 @@ async function run() {
             res.send(users)
         });
 
-
-
         // admin user 
         app.get('/users/admin/:email', async (req, res) => {
             const email = req.params.email;
             const query = { email }
             const user = await usersCollection.findOne(query);
             res.send({ isAdmin: user?.role === 'admin' })
+
+        })
+        //selller user 
+
+        app.get('/users/seller/:email', async (req, res) => {
+            const email = req.params.email;
+            const query = { email }
+            const user = await usersCollection.findOne(query);
+            res.send({ isSeller: user?.account === 'seller' })
 
         })
 
@@ -339,7 +329,7 @@ async function run() {
 
 
         // seller all product (my al products)
-        app.get('/myallproducts', async (req, res) => {
+        app.get('/myallproducts',  async (req, res) => {
 
             let query = {};
             if (req.query.email) {
