@@ -3,7 +3,8 @@ const app = express()
 const cors = require('cors')
 const port = process.env.PORT || 5000
 require('dotenv').config()
-const stripe=require("stripe")(process.env.STRIPE_SECRETE);
+const stripe = require("stripe")(process.env.STRIPE_SECRETE);
+const jwt = require('jsonwebtoken');
 
 
 
@@ -19,6 +20,27 @@ const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology:
 // console.log(uri)
 // console.log(process.env.DB_USER)
 // console.log(process.env.DB_PASS)
+
+function verifyJWT (req , res , next){
+    // console.log(req.headers.authorization)
+    const autHeader = req.headers.authorization;
+    if(!autHeader){
+        return res.status(401).send('unauthorized access')
+    }
+const token = autHeader.split( ' ')[1]
+jwt.verify(token, process.env.ACCESS_TOKEN, function(err , decoded){
+    if(err){
+        return res.status(403).send({message: 'forbidden Access'})
+    }
+    req.decoded = decoded;
+    next();
+
+
+})
+
+}
+
+
 
 async function run() {
     try {
@@ -80,6 +102,33 @@ async function run() {
             res.send(items)
         })
 
+
+
+
+        app.get('/jwt', async (req, res) => {
+            const email = req.query.email;
+            const query = { email: email };
+            const user = await usersCollection.findOne(query);
+
+            if (user) {
+                const token = jwt.sign({ email }, process.env.ACCESS_TOKEN, { expiresIn: '7d' })
+                return res.send({ accessToken: token });
+            }
+            res.status(403).send({ accessToken: '' })
+        });
+
+
+
+
+
+
+
+
+
+
+
+
+
         app.post('/orders', async (req, res) => {
             const order = req.body
             // const query = {
@@ -98,13 +147,16 @@ async function run() {
 
         // buyer order 
 
-        app.get('/orders', async (req, res) => {
+        app.get('/orders', verifyJWT, async (req, res) => {
             const decoded = req.decoded
             // console.log('inside order api ', decoded)
 
-            // if (decoded.email !== req.query.email) {
-            //     res.status(403).send({ message: "unauthorized Access" })
-            // }
+            const decodedEmail = req.query.email
+
+            if ( req.query.email !== decodedEmail ) {
+                res.status(403).send({ message: "Forbidden Access" })
+            }
+         
             let query = {};
             if (req.query.email) {
                 query = {
@@ -154,7 +206,7 @@ async function run() {
             console.log(users.length)
         });
 
-     
+
 
 
 
@@ -199,7 +251,7 @@ async function run() {
             }
             const result = await usersCollection.updateOne(filter, updatedDoc, options)
             res.send(result)
-           
+
 
 
         })
@@ -277,18 +329,18 @@ async function run() {
             const result = await usersCollection.deleteOne(query);
             res.send(result)
         })
-      
+
         app.delete('/items/delete/:id', async (req, res) => {
             const id = req.params.id;
             const query = { _id: ObjectId(id) }
             const result = await itemsCollection.deleteOne(query);
             res.send(result)
         })
-      
+
 
         // seller all product (my al products)
         app.get('/myallproducts', async (req, res) => {
-      
+
             let query = {};
             if (req.query.email) {
                 query = {
@@ -338,31 +390,31 @@ async function run() {
             res.send(order);
         })
         //payment 
-        
-        
+
+
         app.post('/create-payment-intent', async (req, res) => {
             const order = req.body;
             const price = order.price;
             const amount = price * 100;
-            const paymentIntent =  await stripe.paymentIntents.create({
+            const paymentIntent = await stripe.paymentIntents.create({
                 currency: 'usd',
                 amount: amount,
                 "payment_method_types": [
                     "card"
                 ]
             })
-            
-         
+
+
             res.send({
                 clientSecret: paymentIntent.client_secret,
             });
         });
 
-        app.put('/payments', async (req, res) =>{
+        app.put('/payments', async (req, res) => {
             const payment = req.body;
             const result = await paymentsCollection.insertOne(payment);
             const id = payment.ordersId
-            const filter = {_id: ObjectId(id)}
+            const filter = { _id: ObjectId(id) }
             const updatedDoc = {
                 $set: {
                     paid: true,
