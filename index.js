@@ -61,7 +61,7 @@ async function run() {
             const category = await cursor.toArray();
             res.send(category);
         })
-        app.get('/items', async (req, res) => {
+        app.get('/items', verifyJWT, async (req, res) => {
             const query = {}
             const cursor = itemsCollection.find()
             const items = await cursor.toArray();
@@ -147,14 +147,14 @@ async function run() {
         })
 
         // my buyer 
-        app.get('/orders/mybuyer',  async (req, res) => {
-            
+        app.get('/orders/mybuyer', verifyJWT, async (req, res) => {
+
             const decoded = req.decoded
             const decodedEmail = req.query.email
             if (req.query.email !== decodedEmail) {
                 res.status(403).send({ message: "Forbidden Access" })
             }
-            
+
             let query = {};
 
             if (req.query.sellermail) {
@@ -177,7 +177,7 @@ async function run() {
         });
 
         //. all seller get 
-        app.get('/users',  async (req, res) => {
+        app.get('/users', verifyJWT, async (req, res) => {
             let query = {};
 
             if (req.query.account) {
@@ -196,7 +196,7 @@ async function run() {
 
 
         // all buyer
-        app.get('/users',  async (req, res) => {
+        app.get('/users', verifyJWT, async (req, res) => {
 
 
             let query = {};
@@ -212,7 +212,7 @@ async function run() {
         });
 
         // find user email 
-        app.get('/users/email',  async (req, res) => {
+        app.get('/users/email', verifyJWT, async (req, res) => {
             let query = {};
 
             if (req.query.email) {
@@ -256,20 +256,29 @@ async function run() {
         })
         ///wishlist update
 
-        app.put('/wish',  async (req, res) => {
+        app.put('/wish', async (req, res) => {
             const wish = req.body
 
             const result = await wishCollection.insertOne(wish)
             res.send(result)
         });
+        // ads. to booking 
+        app.put('/order', async (req, res) => {
+            const wish = req.body
+
+            const result = await ordersCollection.insertOne(wish)
+            res.send(result)
+        });
+
+
         //wishlist get
-        app.get('/wish',  async (req, res) => {
+        app.get('/wish', verifyJWT, async (req, res) => {
             const decoded = req.decoded
             const decodedEmail = req.query.email
             if (req.query.email !== decodedEmail) {
                 res.status(403).send({ message: "Forbidden Access" })
             }
-    
+
             let query = {};
             if (req.query.email) {
                 query = {
@@ -296,7 +305,7 @@ async function run() {
         });
 
         // admin user 
-        app.get('/users/admin/:email', async (req, res) => {
+        app.get('/users/admin/:email', verifyJWT, async (req, res) => {
             const email = req.params.email;
             const query = { email }
             const user = await usersCollection.findOne(query);
@@ -305,7 +314,7 @@ async function run() {
         })
         //selller user 
 
-        app.get('/users/seller/:email', async (req, res) => {
+        app.get('/users/seller/:email', verifyJWT, async (req, res) => {
             const email = req.params.email;
             const query = { email }
             const user = await usersCollection.findOne(query);
@@ -329,7 +338,7 @@ async function run() {
 
 
         // seller all product (my al products)
-        app.get('/myallproducts',  async (req, res) => {
+        app.get('/myallproducts', verifyJWT, async (req, res) => {
 
             let query = {};
             if (req.query.email) {
@@ -359,7 +368,7 @@ async function run() {
         })
 
         // advertisement items 
-        app.get('/itemsads', async (req, res) => {
+        app.get('/itemsads',  async (req, res) => {
             let query = {};
 
             if (req.query.ads) {
@@ -373,7 +382,7 @@ async function run() {
         });
 
         // single order  get
-        app.get('/orders/:id', async (req, res) => {
+        app.get('/orders/:id', verifyJWT, async (req, res) => {
             const id = req.params.id;
             const query = { _id: ObjectId(id) };
             const order = await ordersCollection.findOne(query);
