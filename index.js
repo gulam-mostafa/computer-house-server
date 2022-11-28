@@ -387,6 +387,7 @@ async function run() {
             }
             const updatedDoc1 = {
                 $set: {
+                    ads: 100,
                     total: 1,
                     // transactionId: payment.transactionId
                 }
