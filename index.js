@@ -389,7 +389,7 @@ async function run() {
                 $set: {
                     ads: 100,
                     total: 1,
-                    // transactionId: payment.transactionId
+                    // transactionId:- payment.transactionId
                 }
             }
 
