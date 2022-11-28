@@ -6,8 +6,6 @@ require('dotenv').config()
 const stripe = require("stripe")(process.env.STRIPE_SECRETE);
 const jwt = require('jsonwebtoken');
 
-
-
 // middleware
 app.use(cors())
 app.use(express.json())
@@ -17,9 +15,6 @@ const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.pjwtwko.mongodb.net/?retryWrites=true&w=majority`;
 
 const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology: true, serverApi: ServerApiVersion.v1 });
-// console.log(uri)
-// console.log(process.env.DB_USER)
-// console.log(process.env.DB_PASS)
 
 function verifyJWT(req, res, next) {
 
@@ -40,8 +35,6 @@ function verifyJWT(req, res, next) {
 
 }
 
-
-
 async function run() {
     try {
 
@@ -51,9 +44,6 @@ async function run() {
         const usersCollection = client.db('computerHouse').collection('users')
         const wishCollection = client.db('computerHouse').collection('wish')
         const paymentsCollection = client.db('computerHouse').collection('Payments')
-
-
-        // console.log(categoryCollection)
 
         app.get('/category', async (req, res) => {
             const query = {}
@@ -94,14 +84,6 @@ async function run() {
             res.send(orders)
         })
 
-
-        // app.get('/category/:id', async (req, res) => {
-        //     const id = req.params.id;
-        //     const query = { _id: ObjectId(id) };
-        //     const category = await categoryCollection.findOne(query)
-        //     res.send(category)
-        // })
-
         app.get('/category/:id', async (req, res) => {
 
             const id = req.params.id;
@@ -120,9 +102,6 @@ async function run() {
             res.send(items)
         })
 
-
-
-
         app.get('/jwt', async (req, res) => {
             const email = req.query.email;
             const query = { email: email };
@@ -135,8 +114,6 @@ async function run() {
             res.status(403).send({ accessToken: '' })
         });
 
-
-
         app.post('/orders', async (req, res) => {
             const order = req.body
 
@@ -145,8 +122,6 @@ async function run() {
         });
 
         // buyer order 
-
-
 
         // my buyer 
         app.get('/orders/mybuyer', verifyJWT, async (req, res) => {
@@ -168,8 +143,6 @@ async function run() {
             const users = await cursor.sort({ createdAt: -1 }).toArray();
             res.send(users)
         });
-
-
 
         app.post('/users', async (req, res) => {
             const user = req.body;
@@ -193,13 +166,8 @@ async function run() {
             // console.log(users.length)
         });
 
-
-
-
-
         // all buyer
         app.get('/users', verifyJWT, async (req, res) => {
-
 
             let query = {};
 
@@ -227,7 +195,6 @@ async function run() {
             res.send(users)
         });
 
-
         // make verified seller
         app.put('/users/sale/:id', async (req, res) => {
             const id = req.params.id;
@@ -240,7 +207,6 @@ async function run() {
             }
             const result = await usersCollection.updateOne(filter, updatedDoc, options)
             res.send(result)
-
         })
         /// reported users update
         app.put('/items/report/:id', async (req, res) => {
@@ -365,8 +331,6 @@ async function run() {
             }
             const result = await itemsCollection.updateOne(filter, updatedDoc, options)
             res.send(result)
-
-
         })
 
         // advertisement items 
@@ -391,8 +355,6 @@ async function run() {
             res.send(order);
         })
         //payment 
-
-
         app.post('/create-payment-intent', async (req, res) => {
             const order = req.body;
             const price = order.price;
@@ -404,8 +366,6 @@ async function run() {
                     "card"
                 ]
             })
-
-
             res.send({
                 clientSecret: paymentIntent.client_secret,
             });
@@ -437,17 +397,7 @@ async function run() {
             res.send(result);
         })
 
-
-
-
-
-
-
-
-
     }
-
-
     finally {
 
     }
