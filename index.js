@@ -77,7 +77,7 @@ async function run() {
         });
 
         app.get('/orders', verifyJWT, async (req, res) => {
-                const email =req.query.email;
+            const email = req.query.email;
             const decodedEmail = req.query.email
             if (email !== decodedEmail) {
                 res.status(403).send({ message: "Forbidden Access" })
@@ -146,7 +146,7 @@ async function run() {
 
         // buyer order 
 
-  
+
 
         // my buyer 
         app.get('/orders/mybuyer', verifyJWT, async (req, res) => {
@@ -370,7 +370,7 @@ async function run() {
         })
 
         // advertisement items 
-        app.get('/itemsads',  async (req, res) => {
+        app.get('/itemsads', async (req, res) => {
             let query = {};
 
             if (req.query.ads) {
@@ -415,14 +415,25 @@ async function run() {
             const payment = req.body;
             const result = await paymentsCollection.insertOne(payment);
             const id = payment.ordersId
+            const ids = payment.orderid;
+
             const filter = { _id: ObjectId(id) }
+            const filter1 = { _id: ObjectId(ids) }
             const updatedDoc = {
                 $set: {
                     paid: true,
                     // transactionId: payment.transactionId
                 }
             }
+            const updatedDoc1 = {
+                $set: {
+                    total: 1,
+                    // transactionId: payment.transactionId
+                }
+            }
+
             const updatedResult = await ordersCollection.updateOne(filter, updatedDoc)
+            const updateResult = await itemsCollection.updateOne(filter1, updatedDoc1)
             res.send(result);
         })
 
