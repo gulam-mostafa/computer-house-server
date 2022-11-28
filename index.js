@@ -76,6 +76,24 @@ async function run() {
             res.send(result);
         });
 
+        app.get('/orders', verifyJWT, async (req, res) => {
+                const email =req.query.email;
+            const decodedEmail = req.query.email
+            if (email !== decodedEmail) {
+                res.status(403).send({ message: "Forbidden Access" })
+            }
+
+            let query = {};
+            if (req.query.email) {
+                query = {
+                    email: req.query.email
+                }
+            }
+            const cursor = ordersCollection.find(query);
+            const orders = await cursor.sort({ createdAt: -1 }).toArray();
+            res.send(orders)
+        })
+
 
         // app.get('/category/:id', async (req, res) => {
         //     const id = req.params.id;
@@ -128,23 +146,7 @@ async function run() {
 
         // buyer order 
 
-        app.get('/orders', verifyJWT, async (req, res) => {
-            const decoded = req.decoded
-            const decodedEmail = req.query.email
-            if (req.query.email !== decodedEmail) {
-                res.status(403).send({ message: "Forbidden Access" })
-            }
-
-            let query = {};
-            if (req.query.email) {
-                query = {
-                    email: req.query.email
-                }
-            }
-            const cursor = ordersCollection.find(query);
-            const orders = await cursor.sort({ createdAt: -1 }).toArray();
-            res.send(orders)
-        })
+  
 
         // my buyer 
         app.get('/orders/mybuyer', verifyJWT, async (req, res) => {
