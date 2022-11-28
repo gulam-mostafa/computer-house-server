@@ -343,7 +343,7 @@ async function run() {
                 }
             }
             const cursor = itemsCollection.find(query)
-            const users = await cursor.sort({ createdAt: -1 }).toArray();
+            const users = await cursor.limit(4).sort({ createdAt: -1 }).toArray();
             res.send(users)
         });
 
