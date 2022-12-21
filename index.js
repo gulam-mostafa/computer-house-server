@@ -194,6 +194,7 @@ async function run() {
             const users = await cursor.sort({ createdAt: -1 }).toArray();
             res.send(users)
         });
+        
 
         // make verified seller 1
         app.put('/users/sale/:id', async (req, res) => {
