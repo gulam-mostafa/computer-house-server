@@ -11,8 +11,8 @@ product on this site.\
 
 
 # Admin Users
-email: neamulhoque33@gmail.com 
-pass: 123456
+email: neamulhoque3@gmail.com 
+pass: ******
 
 
 Website Link: https://computers-house.web.app/
