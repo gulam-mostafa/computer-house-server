@@ -1,8 +1,8 @@
 const express = require('express')
 const app = express()
 const cors = require('cors')
-const port = process.env.PORT || 5000
 require('dotenv').config()
+const port = process.env.PORT || 5000
 const stripe = require("stripe")(process.env.STRIPE_SECRETE);
 const jwt = require('jsonwebtoken');
 
@@ -195,7 +195,7 @@ async function run() {
             res.send(users)
         });
 
-        // make verified seller
+        // make verified seller 1
         app.put('/users/sale/:id', async (req, res) => {
             const id = req.params.id;
             const filter = { _id: ObjectId(id) }
@@ -375,21 +375,25 @@ async function run() {
             const payment = req.body;
             const result = await paymentsCollection.insertOne(payment);
             const id = payment.ordersId
-            const ids = payment.orderid;
+            const ids= payment.orderid;
+            // const order = await itemsCollection.findOne(query);
+            // console.log(order.length)
 
             const filter = { _id: ObjectId(id) }
             const filter1 = { _id: ObjectId(ids) }
+            // const filter2 = { orderid: ids }
+            // console.log(filter2.length)
             const updatedDoc = {
                 $set: {
                     paid: true,
-                    // transactionId: payment.transactionId
+
                 }
             }
             const updatedDoc1 = {
                 $set: {
                     ads: 100,
-                    total: 1,
-                    // transactionId:- payment.transactionId
+                    total: 0,
+
                 }
             }
 
